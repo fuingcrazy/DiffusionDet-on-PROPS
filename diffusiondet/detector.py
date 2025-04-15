@@ -194,7 +194,7 @@ class DiffusionDet(nn.Module):
         times = list(reversed(times.int().tolist()))
         time_pairs = list(zip(times[:-1], times[1:]))  # [(T-1, T-2), (T-2, T-3), ..., (1, 0), (0, -1)]
 
-        img = torch.randn(shape, device=self.device)
+        img = torch.randn(shape, device=self.device)      #generte standard Gaussian noise
 
         ensemble_score, ensemble_label, ensemble_coord = [], [], []
         x_start = None

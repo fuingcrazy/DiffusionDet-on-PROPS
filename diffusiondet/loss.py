@@ -266,6 +266,35 @@ class SetCriterionDynamicK(nn.Module):
                     losses.update(l_dict)
 
         return losses
+    
+    class HeatMap(nn.Module):
+
+        def __init__(self,heatmap_loss_weight,heatmap_size,num_classes,hidden_dim):
+            """
+            Transform a feature map into a BxCxHxW heatmap
+            Args:
+            heatmap_loss_weight: weight for the heatmap loss
+            heatmap_size: size of the heatmap
+            hidden_dim: backbone ouput dimension
+            """
+            super().__init__()
+            self.heatmap_loss_weight = heatmap_loss_weight
+            self.heatmap_size = heatmap_size
+            self.hidden_dim = hidden_dim
+            self.num_classes = num_classes
+            self.layer = nn.Sequential(
+                nn.Conv2d(hidden_dim,64,kernel_size=3,stride=1,padding=1),
+                nn.ReLU(inplace=True),
+                nn.Conv2d(64,num_classes,kernel_size=1)
+            )
+        
+        def generate_center_heatmap(self,gt_boxes,device):
+            """
+            Generate a center heatmap from the ground truth boxes
+            args:
+            gt_boxes:
+            """
+       
 
 
 class HungarianMatcherDynamicK(nn.Module):
