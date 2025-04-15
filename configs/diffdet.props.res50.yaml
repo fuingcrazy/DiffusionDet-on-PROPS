@@ -11,8 +11,9 @@ MODEL:
   SWIN:
     SIZE: B-22k
   DiffusionDet:
-    NUM_PROPOSALS: 50
+    NUM_PROPOSALS: 200
     NUM_CLASSES: 10
+    HeatMap_WEIGHT: 0.5
   FPN:
     IN_FEATURES: ["swin0", "swin1", "swin2", "swin3"]  # 使用Swin Transformer的特征图名称
   ROI_HEADS:
@@ -36,7 +37,7 @@ SOLVER:
   IMS_PER_BATCH: 6
   BASE_LR: 0.0001
   STEPS: (9000, 14000)  # 在10000和15000次迭代时降低学习率
-  MAX_ITER: 17000  # 减少总迭代次数以适应PROPS数据集
+  MAX_ITER: 15000  # 减少总迭代次数以适应PROPS数据集
   WARMUP_FACTOR: 0.01
   WARMUP_ITERS: 1000
   BACKBONE_MULTIPLIER: 1.0

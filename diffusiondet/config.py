@@ -36,6 +36,7 @@ def add_diffusiondet_config(cfg):
     cfg.MODEL.DiffusionDet.L1_WEIGHT = 5.0
     cfg.MODEL.DiffusionDet.DEEP_SUPERVISION = True
     cfg.MODEL.DiffusionDet.NO_OBJECT_WEIGHT = 0.1
+    cfg.MODEL.DiffusionDet.HeatMap_WEIGHT = 0.5
 
     # Focal Loss.
     cfg.MODEL.DiffusionDet.USE_FOCAL = True

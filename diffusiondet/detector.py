@@ -19,7 +19,7 @@ from detectron2.modeling import META_ARCH_REGISTRY, build_backbone, detector_pos
 
 from detectron2.structures import Boxes, ImageList, Instances
 
-from .loss import SetCriterionDynamicK, HungarianMatcherDynamicK
+from .loss import SetCriterionDynamicK, HungarianMatcherDynamicK,HeatMap
 from .head import DynamicHead
 from .util.box_ops import box_cxcywh_to_xyxy, box_xyxy_to_cxcywh
 from .util.misc import nested_tensor_from_tensor_list
@@ -134,10 +134,14 @@ class DiffusionDet(nn.Module):
         giou_weight = cfg.MODEL.DiffusionDet.GIOU_WEIGHT
         l1_weight = cfg.MODEL.DiffusionDet.L1_WEIGHT
         no_object_weight = cfg.MODEL.DiffusionDet.NO_OBJECT_WEIGHT
+        heat_map_weight = cfg.MODEL.DiffusionDet.HeatMap_WEIGHT
         self.deep_supervision = cfg.MODEL.DiffusionDet.DEEP_SUPERVISION
         self.use_focal = cfg.MODEL.DiffusionDet.USE_FOCAL
         self.use_fed_loss = cfg.MODEL.DiffusionDet.USE_FED_LOSS
         self.use_nms = cfg.MODEL.DiffusionDet.USE_NMS
+
+        # Heatmap proposal head
+        self.heatHead = HeatMap(heat_map_weight,(64,48),self.num_classes,self.hidden_dim)
 
         # Build Criterion.
         matcher = HungarianMatcherDynamicK(
@@ -315,12 +319,23 @@ class DiffusionDet(nn.Module):
             return results
 
         if self.training:
+            heatmap_targets = []
             gt_instances = [x["instances"].to(self.device) for x in batched_inputs]
             targets, x_boxes, noises, t = self.prepare_targets(gt_instances)
             t = t.squeeze(-1)
             x_boxes = x_boxes * images_whwh[:, None, :]
 
             outputs_class, outputs_coord = self.head(features, x_boxes, t, None)
+            for t in targets:
+                heatmap = self.heatHead.generate_center_heatmap(t["boxes_xyxy"] / t["image_size_xyxy"],
+                   t["labels"],
+                   self.device)
+                heatmap_targets.append(heatmap)
+            heatmap_targets = torch.stack(heatmap_targets)   #B,C,H,W
+
+            fmap = feature[0]
+            heatmap_pred = F.interpolate(self.heatHead(fmap), size=(64, 48), mode='bilinear', align_corners=False)
+            heatmap_loss = self.heatHead.loss_heatmap(heatmap_pred, heatmap_targets)
             output = {'pred_logits': outputs_class[-1], 'pred_boxes': outputs_coord[-1]}
 
             if self.deep_supervision:
@@ -332,6 +347,7 @@ class DiffusionDet(nn.Module):
             for k in loss_dict.keys():
                 if k in weight_dict:
                     loss_dict[k] *= weight_dict[k]
+            loss_dict["loss_heatmap"] = heatmap_loss * self.heatHead.weight
             return loss_dict
 
     def prepare_diffusion_repeat(self, gt_boxes):
