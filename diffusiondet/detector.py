@@ -7,11 +7,15 @@
 # Copyright (c) Facebook, Inc. and its affiliates. All Rights Reserved
 import math
 import random
+import os
+import cv2
+import numpy as np
 from typing import List
 from collections import namedtuple
 
 import torch
 import torch.nn.functional as F
+import matplotlib.pyplot as plt
 from torch import nn
 
 from detectron2.layers import batched_nms
@@ -90,6 +94,7 @@ class DiffusionDet(nn.Module):
         alphas_cumprod_prev = F.pad(alphas_cumprod[:-1], (1, 0), value=1.)
         timesteps, = betas.shape
         self.num_timesteps = int(timesteps)
+        self.vis_dir = cfg.VIS_DIR
 
         self.sampling_timesteps = default(sampling_timesteps, timesteps)
         assert self.sampling_timesteps <= timesteps
@@ -141,7 +146,7 @@ class DiffusionDet(nn.Module):
         self.use_nms = cfg.MODEL.DiffusionDet.USE_NMS
 
         # Heatmap proposal head
-        self.heatHead = HeatMap(self.heat_map_weight,(32,24),self.num_classes,self.hidden_dim)
+        self.heatHead = HeatMap(self.heat_map_weight,(128,96),self.num_classes,self.hidden_dim)
 
         # Build Criterion.
         matcher = HungarianMatcherDynamicK(
@@ -316,6 +321,15 @@ class DiffusionDet(nn.Module):
         # Prepare Proposals.
         if not self.training:
             results = self.ddim_sample(batched_inputs, features, images_whwh, images)
+            # fmap = features[-1]
+            # heatmap = F.interpolate(self.heatHead(fmap), size=(32, 24), mode='bilinear', align_corners=False)
+            # heatmap = heatmap.detach().cpu().numpy()[0][0] #(32,24)
+            # heatmap_norm = cv2.normalize(heatmap, None, 0, 255, cv2.NORM_MINMAX)
+            # heatmap_uint8 = heatmap_norm.astype(np.uint8)
+            # heatmap_color = cv2.applyColorMap(heatmap_uint8, cv2.COLORMAP_JET)
+            # save_path = os.path.join(self.vis_dir,"heatmap_class 0.jpg")
+            # cv2.imwrite(save_path,heatmap_color)
+            # print("heatmap saved.")
             return results
 
         if self.training:
@@ -334,7 +348,7 @@ class DiffusionDet(nn.Module):
             heatmap_targets = torch.stack(heatmap_targets)   #B,C,H,W
 
             fmap = features[-1]
-            heatmap_pred = F.interpolate(self.heatHead(fmap), size=(32, 24), mode='bilinear', align_corners=False)
+            heatmap_pred = F.interpolate(self.heatHead(fmap), size=(128, 96), mode='bilinear', align_corners=False)
             heatmap_loss = self.heatHead.heat_loss(heatmap_pred, heatmap_targets)
 
             output = {'pred_logits': outputs_class[-1], 'pred_boxes': outputs_coord[-1]}

@@ -51,7 +51,8 @@ SOLVER:
   GAMMA: 0.1  # 学习率衰减因子
 
 # OUTPUT_DIR: "output/props_res50"
-OUTPUT_DIR: "output/props_p200_heat"
+OUTPUT_DIR: "output/props_heat_128"
+VIS_DIR: "output/visualization"
 
 # 添加TensorBoard配置
 TEST:

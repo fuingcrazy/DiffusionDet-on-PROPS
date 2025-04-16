@@ -14,7 +14,7 @@ def setup_cfg():
     add_diffusiondet_config(cfg)  # Add custom config for DiffusionDet
     cfg.merge_from_file("configs/diffdet.props.res50.yaml")
     cfg.MODEL.WEIGHTS = os.path.join(cfg.OUTPUT_DIR, "model_final.pth")
-    cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST = 0.4  # 设置置信度阈值
+    cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST = 0.6  # 设置置信度阈值
     cfg.freeze()
     return cfg
 

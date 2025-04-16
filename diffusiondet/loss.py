@@ -288,7 +288,7 @@ class HeatMap(nn.Module):
                 nn.Conv2d(64,num_classes,kernel_size=1)
             )
         
-        def generate_center_heatmap(self,gt_boxes, gt_labels, device, min_radius=4, radius_scale=0.6):
+        def generate_center_heatmap(self,gt_boxes, gt_labels, device, min_radius=4, radius_scale=0.5):
             H, W = self.heatmap_size
             heatmap = torch.zeros((self.num_classes, H, W), device=device)
 

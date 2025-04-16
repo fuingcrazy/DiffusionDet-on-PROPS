@@ -31,6 +31,6 @@ plt.grid(True)
 plt.tight_layout()
 
 # 保存图像
-save_path = "output/visualization/loss_curve.png"
+save_path = "output/visualization/loss_p200_heat.png"
 plt.savefig(save_path)
 print(f"保存成功: {save_path}")
