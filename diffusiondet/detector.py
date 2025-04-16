@@ -146,7 +146,7 @@ class DiffusionDet(nn.Module):
         self.use_nms = cfg.MODEL.DiffusionDet.USE_NMS
 
         # Heatmap proposal head
-        self.heatHead = HeatMap(self.heat_map_weight,(128,96),self.num_classes,self.hidden_dim)
+        self.heatHead = HeatMap(self.heat_map_weight,(32,24),self.num_classes,self.hidden_dim)
 
         # Build Criterion.
         matcher = HungarianMatcherDynamicK(
@@ -348,7 +348,7 @@ class DiffusionDet(nn.Module):
             heatmap_targets = torch.stack(heatmap_targets)   #B,C,H,W
 
             fmap = features[-1]
-            heatmap_pred = F.interpolate(self.heatHead(fmap), size=(128, 96), mode='bilinear', align_corners=False)
+            heatmap_pred = F.interpolate(self.heatHead(fmap), size=(32, 24), mode='bilinear', align_corners=False)
             heatmap_loss = self.heatHead.heat_loss(heatmap_pred, heatmap_targets)
 
             output = {'pred_logits': outputs_class[-1], 'pred_boxes': outputs_coord[-1]}
