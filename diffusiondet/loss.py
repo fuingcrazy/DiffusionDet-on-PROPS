@@ -288,35 +288,46 @@ class HeatMap(nn.Module):
                 nn.Conv2d(64,num_classes,kernel_size=1)
             )
         
-        def generate_center_heatmap(self,gt_boxes,gt_labels,device):
-            """
-            Generate a center heatmap from the ground truth boxes
-            args:
-            gt_boxes:(N, 4) in (x1, y1, x2, y2), normalized to [0, 1]
-            gt_labels:(N,) in [0, num_classes-1]
-            """
-            H,W = self.heatmap_size
+        def generate_center_heatmap(self,gt_boxes, gt_labels, device, min_radius=4, radius_scale=0.6):
+            H, W = self.heatmap_size
             heatmap = torch.zeros((self.num_classes, H, W), device=device)
 
             for box, cls in zip(gt_boxes, gt_labels):
-              x1, y1, x2, y2 = box
-              cx = (x1 + x2) / 2 * W
-              cy = (y1 + y2) / 2 * H
-              radius = max(1, int(min((x2 - x1) * W, (y2 - y1) * H) * 0.3))
-              xs = torch.arange(0, W, device=device).float()
-              ys = torch.arange(0, H, device=device).float()
-              yy, xx = torch.meshgrid(ys, xs, indexing='ij')
-              gaussian = torch.exp(-((xx - cx) ** 2 + (yy - cy) ** 2) / (2 * radius ** 2))
-              heatmap[cls] = torch.maximum(heatmap[cls], gaussian)
+               x1, y1, x2, y2 = box
+               cx = (x1 + x2) / 2 * W
+               cy = (y1 + y2) / 2 * H
+               w = (x2 - x1) * W
+               h = (y2 - y1) * H
+               radius = max(min_radius, int(min(w, h) * radius_scale))
 
-            return heatmap  # (C, H, W)
+               xs = torch.arange(0, W, device=device).float()
+               ys = torch.arange(0, H, device=device).float()
+               yy, xx = torch.meshgrid(ys, xs, indexing='ij')
+               gaussian = torch.exp(-((xx - cx) ** 2 + (yy - cy) ** 2) / (2 * radius ** 2))
+               gaussian = gaussian / gaussian.max()  # normalize
+
+               heatmap[cls] = torch.maximum(heatmap[cls], gaussian)
+
+            return heatmap
+
         
         def forward(self,feat):
 
             return self.layer(feat)
-        def loss_heatmap(self,pred_heatmap,gt_heatmap):
-            return F.mse_loss(pred_heatmap,gt_heatmap)
-       
+        # def focal_heatmap_loss(pred, gt, alpha=2.0, beta=4.0):
+   
+        #     pos_inds = gt.eq(1).float()
+        #     neg_inds = gt.lt(1).float()
+
+        #     pred = torch.clamp(pred, 1e-4, 1 - 1e-4)
+
+        #     pos_loss = - torch.pow(1 - pred, alpha) * pos_inds * torch.log(pred)
+        #     neg_loss = - torch.pow(pred, alpha) * torch.pow(1 - gt, beta) * neg_inds * torch.log(1 - pred)
+
+        #     return (pos_loss + neg_loss).mean()
+        def heat_loss(self,pred,gt):
+            return F.mse_loss(pred,gt)
+
 
 
 class HungarianMatcherDynamicK(nn.Module):
