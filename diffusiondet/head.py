@@ -109,6 +109,9 @@ class DynamicHead(nn.Module):
             self.bias_value = -math.log((1 - prior_prob) / prior_prob)
         self._reset_parameters()
 
+        # 添加heatmap相关属性
+        self.heatmap = None
+
     def _reset_parameters(self):
         # init all parameters.
         for p in self.parameters():
@@ -170,7 +173,9 @@ class DynamicHead(nn.Module):
         if self.return_intermediate:
             return torch.stack(inter_class_logits), torch.stack(inter_pred_bboxes)
 
+
         return class_logits[None], pred_bboxes[None]
+
 
 
 class RCNNHead(nn.Module):

@@ -321,15 +321,15 @@ class DiffusionDet(nn.Module):
         # Prepare Proposals.
         if not self.training:
             results = self.ddim_sample(batched_inputs, features, images_whwh, images)
-            # fmap = features[-1]
-            # heatmap = F.interpolate(self.heatHead(fmap), size=(32, 24), mode='bilinear', align_corners=False)
-            # heatmap = heatmap.detach().cpu().numpy()[0][0] #(32,24)
-            # heatmap_norm = cv2.normalize(heatmap, None, 0, 255, cv2.NORM_MINMAX)
-            # heatmap_uint8 = heatmap_norm.astype(np.uint8)
-            # heatmap_color = cv2.applyColorMap(heatmap_uint8, cv2.COLORMAP_JET)
-            # save_path = os.path.join(self.vis_dir,"heatmap_class 0.jpg")
-            # cv2.imwrite(save_path,heatmap_color)
-            # print("heatmap saved.")
+            fmap = features[-1]
+            heatmap = F.interpolate(self.heatHead(fmap), size=(240, 320), mode='bilinear', align_corners=False)
+            heatmap = heatmap.detach().cpu().numpy()[0][4] #(32,24)
+            heatmap_norm = cv2.normalize(heatmap, None, 0, 255, cv2.NORM_MINMAX)
+            heatmap_uint8 = heatmap_norm.astype(np.uint8)
+            heatmap_color = cv2.applyColorMap(heatmap_uint8, cv2.COLORMAP_JET)
+            save_path = os.path.join(self.vis_dir,"heatmap_class 9.jpg")
+            cv2.imwrite(save_path,heatmap_color)
+            print("heatmap saved.")
             return results
 
         if self.training:

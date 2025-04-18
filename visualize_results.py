@@ -46,7 +46,8 @@ def main():
     test_images = [
         "datasets/PROPS-Detection-Dataset/PROPS-Detection/004981.jpg",
         "datasets/PROPS-Detection-Dataset/PROPS-Detection/004982.jpg",
-        "datasets/PROPS-Detection-Dataset/PROPS-Detection/004983.jpg"
+        "datasets/PROPS-Detection-Dataset/PROPS-Detection/004983.jpg",
+        "datasets/PROPS-Detection-Dataset/PROPS-Detection/000026.jpg"
     ]
     
     for img_path in test_images:
