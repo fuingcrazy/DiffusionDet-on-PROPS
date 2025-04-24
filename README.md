@@ -16,7 +16,7 @@ We proposed a heatmap head to accelerate training and improve the model's perfor
 ![](images/results.png)
 # Our Dataset
 ![](images/dataset.png)
-Our dataset can be accessed at [dataset](https://drive.google.com/file/d/1gltFSYszf5kGjKHXin1RVSsUee1dccLr/view?usp=drive_link), this dataset contains 10 object categories with 2.5K training images and 2.5K validation images. Each image in the dataset is a 640x480 RGB color image. All images in the validation set are taken from scenes not represented in the training set. We retrained DiffusionDet on this dataset to test the model's robustness.
+Our dataset can be accessed at [PROPS-Detection-Dataset](https://drive.google.com/file/d/1gltFSYszf5kGjKHXin1RVSsUee1dccLr/view?usp=drive_link), this dataset contains 10 object categories with 2.5K training images and 2.5K validation images. Each image in the dataset is a 640x480 RGB color image. All images in the validation set are taken from scenes not represented in the training set. We retrained DiffusionDet on this dataset to test the model's robustness.
 
 To use the dataset,
 ```bash
